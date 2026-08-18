@@ -35,4 +35,9 @@ jobs:
           if [ -d tests ]; then python -m compileall -q tests; fi
 
       - name: Test
-        run: pytest -q
+        run: |
+          if [ -d tests ] && find tests -type f -name 'test_*.py' | grep -q .; then
+            pytest -q
+          else
+            echo 'No tests yet; bootstrap phase.'
+          fi
