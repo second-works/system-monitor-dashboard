@@ -26,18 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install pytest
+          python -m pip install -r requirements.txt
 
-      - name: Import check
-        run: |
-          if [ -d app ]; then python -m compileall -q app; fi
-          if [ -d tests ]; then python -m compileall -q tests; fi
+      - name: Import and syntax check
+        run: python -m compileall -q app tests
 
       - name: Test
-        run: |
-          if [ -d tests ] && find tests -type f -name 'test_*.py' | grep -q .; then
-            pytest -q
-          else
-            echo 'No tests yet; bootstrap phase.'
-          fi
+        run: python -m pytest -q
