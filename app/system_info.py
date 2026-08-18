@@ -32,6 +32,12 @@ def _to_gb(value_in_bytes: int) -> float:
     return round(value_in_bytes / BYTES_PER_GB, 1)
 
 
+def _usage_percent(used: int, total: int) -> float:
+    if total <= 0:
+        return 0.0
+    return round((used / total) * 100, 1)
+
+
 def _os_name() -> str:
     names = {
         "Darwin": "macOS",
@@ -56,7 +62,7 @@ def get_system_info() -> SystemInfo:
         "disk": {
             "used_gb": _to_gb(disk.used),
             "total_gb": _to_gb(disk.total),
-            "percent": round(disk.percent, 1),
+            "percent": _usage_percent(disk.used, disk.total),
         },
         "os": _os_name(),
         "uptime_seconds": max(0, int(time.time() - psutil.boot_time())),

@@ -25,7 +25,7 @@ def test_get_system_info_returns_fixed_structure(monkeypatch) -> None:
         lambda path: SimpleNamespace(
             used=143 * gib,
             total=256 * gib,
-            percent=55.859,
+            percent=99.9,
         ),
     )
     monkeypatch.setattr(system_info.platform, "system", lambda: "Darwin")
@@ -56,3 +56,55 @@ def test_get_system_info_returns_valid_real_machine_ranges() -> None:
     assert 0 <= result["disk"]["percent"] <= 100
     assert isinstance(result["os"], str) and result["os"]
     assert result["uptime_seconds"] >= 0
+
+
+def test_disk_percent_matches_used_and_total(monkeypatch) -> None:
+    gib = system_info.BYTES_PER_GB
+    monkeypatch.setattr(system_info.psutil, "cpu_percent", lambda interval: 0.0)
+    monkeypatch.setattr(
+        system_info.psutil,
+        "virtual_memory",
+        lambda: SimpleNamespace(used=gib, total=2 * gib, percent=50.0),
+    )
+    monkeypatch.setattr(
+        system_info.psutil,
+        "disk_usage",
+        lambda path: SimpleNamespace(
+            used=round(11.7 * gib),
+            total=round(460.4 * gib),
+            percent=99.9,
+        ),
+    )
+    monkeypatch.setattr(system_info.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(system_info.psutil, "boot_time", lambda: 0.0)
+    monkeypatch.setattr(system_info.time, "time", lambda: 0.0)
+
+    result = system_info.get_system_info()
+
+    assert result["disk"] == {
+        "used_gb": 11.7,
+        "total_gb": 460.4,
+        "percent": 2.5,
+    }
+
+
+def test_disk_percent_is_zero_when_total_is_zero(monkeypatch) -> None:
+    gib = system_info.BYTES_PER_GB
+    monkeypatch.setattr(system_info.psutil, "cpu_percent", lambda interval: 0.0)
+    monkeypatch.setattr(
+        system_info.psutil,
+        "virtual_memory",
+        lambda: SimpleNamespace(used=gib, total=2 * gib, percent=50.0),
+    )
+    monkeypatch.setattr(
+        system_info.psutil,
+        "disk_usage",
+        lambda path: SimpleNamespace(used=0, total=0, percent=0.0),
+    )
+    monkeypatch.setattr(system_info.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(system_info.psutil, "boot_time", lambda: 0.0)
+    monkeypatch.setattr(system_info.time, "time", lambda: 0.0)
+
+    result = system_info.get_system_info()
+
+    assert result["disk"]["percent"] == 0.0
