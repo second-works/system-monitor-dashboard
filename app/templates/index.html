@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A lightweight local system monitor dashboard">
+    <title>System Monitor Dashboard</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <main class="dashboard-shell">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">LOCAL SYSTEM</p>
+          <h1>System Monitor Dashboard</h1>
+          <p class="subtitle">Current health of this computer at a glance.</p>
+        </div>
+        <div class="live-indicator" aria-live="polite">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="status-text">Loading system data…</span>
+        </div>
+      </header>
+
+      <section id="error-panel" class="error-panel" role="alert" hidden>
+        Unable to load system data. Retrying automatically…
+      </section>
+
+      <section class="metrics-grid" aria-label="System metrics">
+        <article class="metric-card metric-card-wide">
+          <div class="metric-heading">
+            <h2>CPU</h2>
+            <span class="metric-icon" aria-hidden="true">CPU</span>
+          </div>
+          <p id="cpu-value" class="metric-value">—</p>
+          <p class="metric-caption">Current utilization</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-heading">
+            <h2>Memory</h2>
+            <span class="metric-icon" aria-hidden="true">RAM</span>
+          </div>
+          <p id="memory-percent" class="metric-value">—</p>
+          <p id="memory-detail" class="metric-caption">—</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-heading">
+            <h2>Disk</h2>
+            <span class="metric-icon" aria-hidden="true">DISK</span>
+          </div>
+          <p id="disk-percent" class="metric-value">—</p>
+          <p id="disk-detail" class="metric-caption">—</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-heading">
+            <h2>OS</h2>
+            <span class="metric-icon" aria-hidden="true">OS</span>
+          </div>
+          <p id="os-value" class="metric-value metric-value-text">—</p>
+          <p class="metric-caption">Operating system</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-heading">
+            <h2>Uptime</h2>
+            <span class="metric-icon" aria-hidden="true">TIME</span>
+          </div>
+          <p id="uptime-value" class="metric-value metric-value-text">—</p>
+          <p class="metric-caption">Since last boot</p>
+        </article>
+      </section>
+
+      <footer class="page-footer">
+        <span>Auto-refresh every 5 seconds</span>
+        <span>Last Update: <time id="last-update">—</time></span>
+      </footer>
+    </main>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

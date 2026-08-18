@@ -29,3 +29,12 @@ def test_system_api_returns_fixed_response_structure(monkeypatch) -> None:
     }
     assert set(response.json()["memory"]) == {"used_gb", "total_gb", "percent"}
     assert set(response.json()["disk"]) == {"used_gb", "total_gb", "percent"}
+
+
+def test_root_serves_dashboard_for_html_clients() -> None:
+    response = client.get("/", headers={"accept": "text/html"})
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "System Monitor Dashboard" in response.text
+    assert "/static/app.js" in response.text
