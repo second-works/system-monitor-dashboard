@@ -1,10 +1,9 @@
 # system-monitor-dashboard
 
-Nine標準AI開発フローの実証用プロジェクトです。
+ローカルPCの状態をブラウザから確認する小規模なシステムモニターダッシュボードです。
+Nine標準AI開発フローの実証用プロジェクトとして、Issueを仕様の基準にしています。
 
-ローカルPCのCPU、メモリ、ディスク、OS、稼働時間をWebブラウザから確認できる小規模ダッシュボードを構築します。
-
-## V1 scope
+## V1の対象
 
 - CPU使用率
 - メモリ使用量
@@ -13,31 +12,25 @@ Nine標準AI開発フローの実証用プロジェクトです。
 - Uptime
 - `GET /api/system`
 - Webダッシュボード
-- 自動更新
-- エラー表示
-- テスト
-- GitHub Actions CI
+- 5秒間隔の自動更新
+- API取得失敗時のエラー表示と復旧
 
-## Out of scope for V1
+## V1で対応しないもの
 
-GPU、温度、ネットワーク、Docker、ローカルLLM、履歴保存、認証、通知、グラフ表示はV1では実装しません。
+GPU、温度、ネットワーク、Docker、ローカルLLM、履歴保存、認証、通知、グラフ表示は対象外です。
 
-## Stack
+## 技術構成
 
-- Python
-- FastAPI
+- Python 3.12以上
+- FastAPI / Uvicorn
 - psutil
 - HTML / CSS / JavaScript
 - pytest
 - GitHub Actions
 
-## Development workflow
+## セットアップ
 
-GitHub Issueを仕様の基準とし、原則 **1子Issue = 1 PR** で進めます。詳細は `AGENTS.md` を参照してください。
-
-## Local development
-
-Python 3.12以上を用意し、仮想環境で依存関係をインストールします。
+仮想環境を作成し、依存関係をインストールします。
 
 ```bash
 python -m venv .venv
@@ -45,18 +38,67 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-アプリを起動します。
+## 起動
+
+プロジェクトルートで次を実行します。
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-起動後、<http://127.0.0.1:8000/> にアクセスするとHTTP 200と `{"status":"ok"}` が返ります。
+ブラウザで <http://127.0.0.1:8000/> を開くとDashboardが表示されます。
+CPU、Memory、Disk、OS、Uptime、Last Updateが表示され、5秒ごとに最新値へ更新されます。
 
-テストを実行します。
+APIが一時的に利用できない場合はエラー表示になり、APIが復旧すると自動的にLive表示へ戻ります。
+
+## 主要API
+
+### `GET /`
+
+ブラウザのHTMLリクエストにはDashboardを返します。
+JSONクライアントなどHTMLを要求しないリクエストには、互換性維持のため次を返します。
+
+```json
+{"status": "ok"}
+```
+
+### `GET /api/system`
+
+現在のシステム情報をJSONで返します。
+
+```json
+{
+  "cpu_percent": 24.1,
+  "memory": {"used_gb": 8.5, "total_gb": 16.0, "percent": 53.1},
+  "disk": {"used_gb": 143.0, "total_gb": 256.0, "percent": 55.9},
+  "os": "macOS",
+  "uptime_seconds": 301400
+}
+```
+
+CPU、Memory、Diskの割合は0から100までのパーセント値です。
+メモリとディスクの容量はGB、Uptimeは秒で返します。
+
+## テスト
+
+通常のテストとPythonのimport / syntaxチェックを実行します。
 
 ```bash
 pytest -q
+python -m compileall -q app tests
 ```
 
-現在のIssue #2では、アプリ基盤とルートエンドポイントの疎通確認までを扱います。システム情報APIとDashboard UIは後続Issueで実装します。
+統合テストでは、HTMLとしてのトップページ、静的ファイル、`/api/system`の到達性とレスポンスを確認します。
+
+## 手動確認
+
+1. READMEの手順でアプリを起動する。
+2. ブラウザでDashboardを開き、5つのメトリクスとLast Updateを確認する。
+3. 5秒以上待ち、Last Updateと値が更新されることを確認する。
+4. Uvicornを停止し、エラー表示とUpdate failed表示を確認する。
+5. Uvicornを再起動し、Live表示へ戻ることを確認する。
+
+## 開発ルール
+
+GitHub Issueを仕様の基準とし、原則 **1子Issue = 1 PR** で進めます。
+詳細なルールは `AGENTS.md` を参照してください。
